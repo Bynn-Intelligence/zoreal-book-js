@@ -119,6 +119,23 @@ describe('modal', () => {
     expect(brand.querySelector('svg')).not.toBeNull();
   });
 
+  it('a warmed frame is retired when the layer opens, and the layer is driven by its own frame', () => {
+    ZorealBook.preload({ link: 'bynn/miz-ewbs' });
+    expect(document.querySelectorAll('iframe').length).toBe(1);
+
+    ZorealBook.modal({ link: 'bynn/miz-ewbs' });
+    // The warmed frame left the page; the layer's frame lives in its shadow root.
+    expect(document.querySelectorAll('iframe').length).toBe(0);
+    const frame = findFrame();
+    expect(frame.style.height).not.toBe('1px');
+
+    spyOnFrame(frame);
+    send(frame, INBOUND.dimension, { height: 720 });
+    send(frame, 'linkReady', { link: 'bynn/miz-ewbs' });
+    expect(frame.style.height).toBe('720px');
+    expect(shadowOf('modal').querySelector('.zb-dialog')?.getAttribute('data-ready')).toBe('true');
+  });
+
   it('closes on Escape', () => {
     ZorealBook.modal({ link: 'bynn/miz-ewbs' });
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));

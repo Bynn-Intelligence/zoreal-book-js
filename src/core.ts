@@ -213,22 +213,21 @@ export class BookNamespace {
     brand.setAttribute('aria-label', 'ZOREAL');
     brand.innerHTML = BRAND_MARK;
 
-    const preloaded = this.preloaded.get(options.link);
-    const frame =
-      preloaded ??
-      new BookFrame({
-        origin: this.origin,
-        namespace: this.namespace,
-        link: options.link,
-        config: options.config,
-        ui: this.uiConfig,
-        onMessage: (message) => handle(message),
-      });
+    // A warmed frame is retired here, not adopted: moving an iframe into the
+    // dialog reloads its document anyway, and it is the frame built for the
+    // layer whose messages size and reveal it. The warm-up did its work in the
+    // browser's cache.
+    this.preloaded.get(options.link)?.destroy();
+    this.preloaded.delete(options.link);
 
-    if (preloaded) {
-      this.preloaded.delete(options.link);
-      if (options.config) preloaded.setConfig(options.config);
-    }
+    const frame = new BookFrame({
+      origin: this.origin,
+      namespace: this.namespace,
+      link: options.link,
+      config: options.config,
+      ui: this.uiConfig,
+      onMessage: (message) => handle(message),
+    });
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
@@ -323,6 +322,8 @@ export class BookNamespace {
   preload(options: PreloadOptions): void {
     assertValidLink(options.link);
     if (this.preloaded.has(options.link)) return;
+    // The page and its data land in the browser's cache, so the layer's own
+    // frame, built on the click, loads from there. Nothing is adopted.
 
     const frame = new BookFrame({
       origin: this.origin,
