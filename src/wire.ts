@@ -53,11 +53,13 @@ export interface WireMessage<P = unknown> {
 
 /**
  * Popups are allowed for exactly two reasons: pairing a ZOREAL ID on the same
- * device, and Stripe Checkout. `allow-top-navigation` is deliberately absent,
- * so the frame can never move the page it is embedded in.
+ * device, and Stripe Checkout, which refuses to render inside a frame and so
+ * opens in a new tab. Downloads are allowed for the calendar file a confirmed
+ * booking offers. `allow-top-navigation` is deliberately absent, so the frame
+ * can never move the page it is embedded in.
  */
 export const FRAME_SANDBOX =
-  'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox';
+  'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads';
 
 /** Strips a trailing slash so origin + path never doubles up. */
 export function normaliseOrigin(origin: string): string {

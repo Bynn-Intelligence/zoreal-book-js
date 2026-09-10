@@ -119,6 +119,7 @@ describe('the frame is sandboxed', () => {
     expect(sandbox).toContain('allow-scripts');
     expect(sandbox).toContain('allow-forms');
     expect(sandbox).toContain('allow-popups');
+    expect(sandbox).toContain('allow-downloads');
     expect(sandbox).not.toContain('allow-top-navigation');
     frame.destroy();
   });

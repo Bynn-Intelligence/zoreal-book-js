@@ -415,7 +415,13 @@ ZorealBook.ns('sales').on('bookingSuccessful', trackSalesBooking);
 
 ## What your page needs to allow
 
-If you set a Content Security Policy, the embed needs two directives:
+Nothing, for most sites. The booking page is served so that any site may
+frame it, the way Cal.com's is, so there is no allowlist to join, no domain
+to register and no key to create. Paste the tag or install the package and it
+works.
+
+The one exception is a site that already sets a Content Security Policy.
+Then the embed needs two directives:
 
 ```
 script-src  https://book.zoreal.com
@@ -433,8 +439,10 @@ and the guest's data lives inside the frame on ZOREAL's origin, not yours.
 ## How the frame is isolated
 
 - **Sandboxed.** `allow-scripts allow-forms allow-same-origin allow-popups
-  allow-popups-to-escape-sandbox`. Popups are needed exactly twice: pairing a
-  ZOREAL ID on the same device, and Stripe Checkout. `allow-top-navigation` is
+  allow-popups-to-escape-sandbox allow-downloads`. Popups are needed exactly
+  twice: pairing a ZOREAL ID on the same device, and Stripe Checkout, which
+  will not render inside a frame and opens in a new tab. Downloads cover the
+  calendar file a confirmed booking offers. `allow-top-navigation` is
   deliberately absent, so the frame can never move your page.
 - **Origin-checked in both directions.** Your page accepts a message only from
   the exact origin it opened, and only from that frame's own window. A frame
