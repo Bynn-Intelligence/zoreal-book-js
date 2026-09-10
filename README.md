@@ -53,6 +53,12 @@ leak out:
 
 ![The booking screens open as a layer over a host page, with the page dimmed behind](docs/modal.png)
 
+The same layer with the browser set to dark. Nothing is configured for this:
+the page follows the browser's own scheme unless you pin one, and the frame
+stays transparent either way:
+
+![The same layer on a dark host page, the booking card in its dark scheme](docs/modal-dark.png)
+
 ## Install
 
 ```sh
