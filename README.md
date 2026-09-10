@@ -150,6 +150,65 @@ Every attribute the tag understands:
 | `data-zoreal-book-color` | Floating mode: any CSS colour |
 | `data-zoreal-book-text-color` | Floating mode: any CSS colour |
 
+## Where the tag goes
+
+The answer depends on the mode, and getting it wrong is the one mistake people
+make with this tag.
+
+**Inline renders where the tag stands.** Put the tag in the body of the page,
+at the exact spot the calendar should appear: inside the section, column or
+block that should hold it. Do not put an inline tag in the head, the header or
+the footer, because that is where the calendar would be drawn. The script
+inserts a container right after itself and fills it; the screens take the full
+width of whatever wraps them and size themselves to their own height, so give
+them no fixed height and no scrolling wrapper.
+
+```html
+<section class="book-a-demo">
+  <h2>Book a demo</h2>
+  <script src="https://book.zoreal.com/embed.js" data-zoreal-book="acme/kwm-drpt" async></script>
+</section>
+```
+
+**Popup renders nothing until a button is clicked.** Put the tag once per page,
+anywhere: the head, a header or footer script slot, or just before `</body>` all
+work. Then give any element the link attribute, and clicking it opens the
+booking as a layer over the page. Buttons added to the page later work too, and
+several buttons can share one tag.
+
+```html
+<!-- Once per page, in the head or at the end of the body -->
+<script src="https://book.zoreal.com/embed.js" data-zoreal-book="acme/kwm-drpt" data-zoreal-book-mode="popup" async></script>
+
+<!-- Anywhere on the page, styled however you like -->
+<button type="button" data-zoreal-book-link="acme/kwm-drpt">Book a demo</button>
+
+<!-- A link works too; the address is the fallback if the script is blocked -->
+<a href="https://book.zoreal.com/acme/kwm-drpt" data-zoreal-book-link="acme/kwm-drpt">Book a demo</a>
+```
+
+To tell bookings from one button apart from another in your Book dashboard,
+carry a source in the button's config:
+
+```html
+<button type="button"
+        data-zoreal-book-link="acme/kwm-drpt"
+        data-zoreal-book-config='{"metadata":{"source":"pricing_page"}}'>
+  Talk to sales
+</button>
+```
+
+**Floating** is a popup with its own button fixed to a corner of every page,
+so the tag goes in the head or footer like a popup tag. **Redirect** sends the
+visitor to the hosted page as soon as the tag runs, so it belongs on a page
+whose only purpose is that; for a button that redirects, use the link
+attribute with `data-zoreal-book-mode="redirect"` on the button instead.
+
+**Page builders.** In WordPress, Webflow, Squarespace, Wix, Framer and similar,
+the inline tag goes in an HTML or embed block placed where the calendar should
+sit, and the popup tag goes in the site's header or footer code setting, with
+the link attribute added to a button through the builder's custom attributes.
+
 The tag also leaves the full API on `window.ZorealBook`, so you can start with
 one tag and reach for anything below without changing how it loads.
 
