@@ -1,7 +1,7 @@
 import { Emitter } from './emitter';
 import { BookFrame } from './frame';
 import { createShadowHost } from './shadow';
-import { CLOSE_ICON } from './styles';
+import { BRAND_MARK, CLOSE_ICON } from './styles';
 import type {
   BookConfig,
   BookEventHandler,
@@ -45,6 +45,13 @@ function resolveElement(element: HTMLElement | string): HTMLElement {
  * its own listeners. Two of them on one page, say a short "sales" call and a
  * long "onboarding" one, never see each other's events.
  */
+/** How long the layer waits for the page to report its link before showing it anyway. */
+const REVEAL_FALLBACK_MS = 8000;
+
+/** Where the mark under the layer goes: home, saying which site it came from. */
+const BRAND_URL = (hostname: string): string =>
+  `https://zoreal.com/?utm_source=zoreal_book&utm_medium=embed&utm_campaign=layer&utm_content=${encodeURIComponent(hostname)}`;
+
 export class BookNamespace {
   readonly namespace: string;
 
@@ -118,7 +125,8 @@ export class BookNamespace {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'zb-inline';
-    if (this.uiConfig?.theme === 'dark') wrapper.setAttribute('data-theme', 'dark');
+    const inlineTheme = this.uiConfig?.theme;
+    if (inlineTheme === 'dark' || inlineTheme === 'light') wrapper.setAttribute('data-theme', inlineTheme);
 
     const spinner = document.createElement('div');
     spinner.className = 'zb-spinner';
@@ -172,7 +180,8 @@ export class BookNamespace {
 
     const dialog = document.createElement('div');
     dialog.className = 'zb-dialog';
-    if (this.uiConfig?.theme === 'dark') dialog.setAttribute('data-theme', 'dark');
+    const theme = this.uiConfig?.theme;
+    if (theme === 'dark' || theme === 'light') dialog.setAttribute('data-theme', theme);
 
     const close = document.createElement('button');
     close.className = 'zb-close';
@@ -180,6 +189,9 @@ export class BookNamespace {
     close.setAttribute('aria-label', 'Close booking');
     close.innerHTML = CLOSE_ICON;
 
+    // The spinner sits on the backdrop, not in the dialog: until the page
+    // has its times there is nothing to show a box around, so the layer is
+    // a dimmed page and a ring, and the dialog appears at its content's size.
     const spinner = document.createElement('div');
     spinner.className = 'zb-spinner';
 
@@ -188,6 +200,18 @@ export class BookNamespace {
     // dialog's, and none when it fits.
     const body = document.createElement('div');
     body.className = 'zb-body';
+
+    // Under the dialog, the mark of the product the guest is booking through,
+    // linking home. The link keeps its referrer on purpose: the host page is
+    // where the guest came from, and that is the whole point of the mark.
+    const brand = document.createElement('a');
+    brand.className = 'zb-brand';
+    brand.href = BRAND_URL(window.location.hostname);
+    brand.target = '_blank';
+    brand.rel = 'noopener';
+    brand.referrerPolicy = 'no-referrer-when-downgrade';
+    brand.setAttribute('aria-label', 'ZOREAL');
+    brand.innerHTML = BRAND_MARK;
 
     const preloaded = this.preloaded.get(options.link);
     const frame =
@@ -208,9 +232,20 @@ export class BookNamespace {
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
+    // Revealed when the page says the link resolved, one way or the other,
+    // so the dialog opens showing the times rather than a skeleton of them.
+    // A page that never says so still appears: nobody waits on a ring.
+    const reveal = () => {
+      window.clearTimeout(revealTimer);
+      spinner.hidden = true;
+      dialog.setAttribute('data-ready', 'true');
+    };
+    const revealTimer = window.setTimeout(reveal, REVEAL_FALLBACK_MS);
+
     const dismiss = () => {
       if (this.openModal !== dismiss) return;
       this.openModal = null;
+      window.clearTimeout(revealTimer);
       document.removeEventListener('keydown', onKey);
       this.release(frame);
       host.remove();
@@ -218,7 +253,7 @@ export class BookNamespace {
     };
 
     const handle = (message: WireMessage) => {
-      if (message.type === INBOUND.ready) spinner.hidden = true;
+      if (message.type === 'linkReady' || message.type === 'linkFailed') reveal();
       if (message.type === INBOUND.dimension) {
         const height = (message.payload as { height?: number })?.height;
         if (typeof height === 'number' && height > 0) frame.iframe.style.height = `${height}px`;
@@ -237,11 +272,12 @@ export class BookNamespace {
     });
     document.addEventListener('keydown', onKey);
 
-    dialog.appendChild(close);
     body.appendChild(frame.iframe);
     dialog.appendChild(body);
-    dialog.appendChild(spinner);
+    overlay.appendChild(close);
+    overlay.appendChild(spinner);
     overlay.appendChild(dialog);
+    overlay.appendChild(brand);
     root.appendChild(overlay);
     document.body.appendChild(host);
     this.track(frame);

@@ -189,10 +189,13 @@ embed.destroy();
 
 ### Modal
 
-A layer over your page, closed by the close button, the backdrop, the Escape
-key, or the guest finishing. The layer is as tall as the booking screens and
-no taller, up to the height of the window; past that the layer scrolls, the
-frame never does, so there is one scrollbar at most.
+A layer over your page: the page dims and blurs, a ring turns until the times
+are there, and the booking card appears at its own size with the close in the
+corner of the window and the ZOREAL mark beneath it. Nothing of the SDK's is
+drawn around the card. It closes by the close button, the backdrop, the Escape
+key, or the guest finishing. The card is as tall as its content, up to the
+height of the window; past that the layer scrolls, the frame never does, so
+there is one scrollbar at most.
 
 ```js
 const modal = ZorealBook.modal({ link: 'acme/kwm-drpt' });

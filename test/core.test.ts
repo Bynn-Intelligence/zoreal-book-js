@@ -91,6 +91,34 @@ describe('modal', () => {
     expect(frame.parentElement?.className).toBe('zb-body');
   });
 
+  it('shows a ring on the backdrop until the page has its times, then reveals the card', () => {
+    ZorealBook.modal({ link: 'bynn/miz-ewbs' });
+    const root = shadowOf('modal');
+    const dialog = root.querySelector('.zb-dialog') as HTMLElement;
+    const spinner = root.querySelector('.zb-spinner') as HTMLElement;
+    expect(dialog.getAttribute('data-ready')).toBeNull();
+    expect(spinner.hidden).toBe(false);
+
+    const frame = findFrame();
+    spyOnFrame(frame);
+    send(frame, INBOUND.ready);
+    expect(dialog.getAttribute('data-ready')).toBeNull();
+    send(frame, 'linkReady', { link: 'bynn/miz-ewbs' });
+
+    expect(dialog.getAttribute('data-ready')).toBe('true');
+    expect(spinner.hidden).toBe(true);
+  });
+
+  it('puts the ZOREAL mark under the card, linking home with the referrer kept', () => {
+    ZorealBook.modal({ link: 'bynn/miz-ewbs' });
+    const brand = shadowOf('modal').querySelector('a.zb-brand') as HTMLAnchorElement;
+    expect(brand.href).toMatch(/^https:\/\/zoreal\.com\/\?utm_source=zoreal_book/);
+    expect(brand.target).toBe('_blank');
+    expect(brand.rel).toBe('noopener');
+    expect(brand.referrerPolicy).toBe('no-referrer-when-downgrade');
+    expect(brand.querySelector('svg')).not.toBeNull();
+  });
+
   it('closes on Escape', () => {
     ZorealBook.modal({ link: 'bynn/miz-ewbs' });
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
