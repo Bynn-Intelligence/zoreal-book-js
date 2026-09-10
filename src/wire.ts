@@ -103,11 +103,15 @@ export function assertValidMetadata(metadata: Record<string, string> | undefined
  * message channel once the frame reports it is ready, because a name or an
  * email in a URL ends up in server logs, browser history and referrer headers.
  */
-export function frameUrl(origin: string, link: string, namespace: string): string {
+export function frameUrl(origin: string, link: string, namespace: string, theme?: string): string {
   const url = new URL(`${normaliseOrigin(origin)}/${link}`);
   url.searchParams.set('embed', String(PROTOCOL_VERSION));
   url.searchParams.set('embedOrigin', window.location.origin);
   url.searchParams.set('ns', namespace);
+  // A theme that is known before the frame is created travels in the address,
+  // so the page's very first paint is in the host's scheme rather than its own
+  // and then corrected. Nothing personal is ever put here.
+  if (theme === 'light' || theme === 'dark') url.searchParams.set('theme', theme);
   return url.toString();
 }
 

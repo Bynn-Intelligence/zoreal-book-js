@@ -42,9 +42,11 @@ export const STYLES = `
 
 .zb-dialog {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 1024px;
-  height: min(760px, calc(100vh - 48px));
+  max-height: calc(100vh - 48px);
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 24px 64px rgba(15, 18, 23, 0.28);
@@ -106,6 +108,25 @@ export const STYLES = `
   background: transparent;
 }
 
+/* The frame element's own scheme follows the theme it was given, so a dark
+   layer never shows a light canvas around a dark page while it loads. */
+.zb-dialog[data-theme="dark"] .zb-frame,
+.zb-inline[data-theme="dark"] .zb-frame {
+  color-scheme: dark;
+}
+
+.zb-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.zb-body .zb-frame {
+  height: 520px;
+  transition: height 180ms ease;
+}
+
 .zb-inline {
   position: relative;
   width: 100%;
@@ -143,7 +164,8 @@ export const STYLES = `
 @media (prefers-reduced-motion: reduce) {
   .zb-overlay,
   .zb-dialog,
-  .zb-inline { transition: none; }
+  .zb-inline,
+  .zb-body .zb-frame { transition: none; }
   .zb-spinner::after { animation-duration: 2s; }
 }
 
@@ -183,6 +205,7 @@ export const STYLES = `
   .zb-overlay { padding: 0; }
   .zb-dialog {
     height: 100vh;
+    max-height: 100vh;
     max-width: none;
     border-radius: 0;
   }

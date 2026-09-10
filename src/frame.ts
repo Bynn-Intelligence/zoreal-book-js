@@ -55,7 +55,7 @@ export class BookFrame {
     this.onMessage = options.onMessage;
 
     const iframe = document.createElement('iframe');
-    iframe.src = frameUrl(this.origin, this.link, this.namespace);
+    iframe.src = frameUrl(this.origin, this.link, this.namespace, options.ui?.theme);
     iframe.className = 'zb-frame';
     iframe.setAttribute('sandbox', FRAME_SANDBOX);
     iframe.setAttribute('allow', 'payment; clipboard-write');

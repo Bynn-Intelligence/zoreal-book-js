@@ -177,7 +177,9 @@ embed.destroy();
 ### Modal
 
 A layer over your page, closed by the close button, the backdrop, the Escape
-key, or the guest finishing.
+key, or the guest finishing. The layer is as tall as the booking screens and
+no taller, up to the height of the window; past that the layer scrolls, the
+frame never does, so there is one scrollbar at most.
 
 ```js
 const modal = ZorealBook.modal({ link: 'acme/kwm-drpt' });
@@ -271,7 +273,9 @@ ZorealBook.modal({
 **Prefill never travels in the URL.** The frame is opened bare and the config is
 posted to it over the message channel once it reports ready. A name or an email
 in a URL ends up in server logs, browser history and referrer headers, and none
-of those are places a guest's details belong.
+of those are places a guest's details belong. The address carries the link,
+the protocol version, your page's origin, the namespace and, when you set one,
+the theme, so the page's very first paint is in your scheme. Nothing else.
 
 That rule is also why `redirect()` and `hostedUrl()` drop `name`, `email`,
 `phone`, `guests`, `notes` and `answers` and warn in the console when you pass

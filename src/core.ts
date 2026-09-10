@@ -53,6 +53,8 @@ export class BookNamespace {
   private readonly emitter = new Emitter();
   private readonly frames = new Set<BookFrame>();
   private readonly preloaded = new Map<string, BookFrame>();
+  /** One inline embed per element: mounting again replaces, it never doubles. */
+  private readonly inlines = new Map<Element, () => void>();
   private openModal: (() => void) | null = null;
 
   constructor(namespace: string) {
@@ -109,10 +111,14 @@ export class BookNamespace {
    */
   inline(options: InlineOptions): InlineHandle {
     const target = resolveElement(options.element);
+    // A page builder or a hot reload that runs the same call twice would
+    // otherwise stack two frames in one element; the earlier one goes first.
+    this.inlines.get(target)?.();
     const { host, root } = createShadowHost('inline');
 
     const wrapper = document.createElement('div');
     wrapper.className = 'zb-inline';
+    if (this.uiConfig?.theme === 'dark') wrapper.setAttribute('data-theme', 'dark');
 
     const spinner = document.createElement('div');
     spinner.className = 'zb-spinner';
@@ -139,11 +145,15 @@ export class BookNamespace {
     target.appendChild(host);
     this.track(frame);
 
+    const destroy = () => {
+      if (this.inlines.get(target) === destroy) this.inlines.delete(target);
+      this.release(frame);
+      host.remove();
+    };
+    this.inlines.set(target, destroy);
+
     return {
-      destroy: () => {
-        this.release(frame);
-        host.remove();
-      },
+      destroy,
       setConfig: (config: BookConfig) => frame.setConfig(config),
     };
   }
@@ -172,6 +182,12 @@ export class BookNamespace {
 
     const spinner = document.createElement('div');
     spinner.className = 'zb-spinner';
+
+    // The frame is as tall as its own content and the dialog scrolls it, so
+    // the booking page never scrolls inside the layer: one scrollbar, the
+    // dialog's, and none when it fits.
+    const body = document.createElement('div');
+    body.className = 'zb-body';
 
     const preloaded = this.preloaded.get(options.link);
     const frame =
@@ -203,6 +219,10 @@ export class BookNamespace {
 
     const handle = (message: WireMessage) => {
       if (message.type === INBOUND.ready) spinner.hidden = true;
+      if (message.type === INBOUND.dimension) {
+        const height = (message.payload as { height?: number })?.height;
+        if (typeof height === 'number' && height > 0) frame.iframe.style.height = `${height}px`;
+      }
       if (message.type === INBOUND.close) dismiss();
       this.publish(message);
     };
@@ -218,7 +238,8 @@ export class BookNamespace {
     document.addEventListener('keydown', onKey);
 
     dialog.appendChild(close);
-    dialog.appendChild(frame.iframe);
+    body.appendChild(frame.iframe);
+    dialog.appendChild(body);
     dialog.appendChild(spinner);
     overlay.appendChild(dialog);
     root.appendChild(overlay);

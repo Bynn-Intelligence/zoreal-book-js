@@ -54,6 +54,13 @@ describe('frame URL', () => {
     const url = frameUrl('https://book.zoreal.com', 'bynn/miz-ewbs', 'default');
     expect(url).not.toMatch(/name|email|phone|notes/i);
   });
+
+  it('carries a known theme so the first paint is already right, and nothing for auto', () => {
+    const dark = new URL(frameUrl('https://book.zoreal.com', 'bynn/miz-ewbs', 'default', 'dark'));
+    expect(dark.searchParams.get('theme')).toBe('dark');
+    const auto = new URL(frameUrl('https://book.zoreal.com', 'bynn/miz-ewbs', 'default', 'auto'));
+    expect(auto.searchParams.has('theme')).toBe(false);
+  });
 });
 
 describe('helpers', () => {

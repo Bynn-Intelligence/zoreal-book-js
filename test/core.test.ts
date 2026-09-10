@@ -47,6 +47,15 @@ describe('inline', () => {
     expect(wrapper.style.height).toBe('812px');
   });
 
+  it('mounting into the same element again replaces the earlier frame', () => {
+    const mount = document.createElement('div');
+    document.body.appendChild(mount);
+    ZorealBook.inline({ link: 'bynn/miz-ewbs', element: mount });
+    ZorealBook.inline({ link: 'bynn/miz-ewbs', element: mount });
+
+    expect(mount.querySelectorAll('[data-zoreal-book="inline"]').length).toBe(1);
+  });
+
   it('accepts a selector as well as an element', () => {
     document.body.innerHTML = '<div id="book"></div>';
     ZorealBook.inline({ link: 'bynn/miz-ewbs', element: '#book' });
@@ -70,6 +79,16 @@ describe('modal', () => {
     send(frame, INBOUND.close);
 
     expect(document.querySelector('[data-zoreal-book="modal"]')).toBeNull();
+  });
+
+  it('sizes the frame to the page and lets the dialog scroll, never the frame', () => {
+    ZorealBook.modal({ link: 'bynn/miz-ewbs' });
+    const frame = findFrame();
+    spyOnFrame(frame);
+    send(frame, INBOUND.dimension, { height: 640 });
+
+    expect(frame.style.height).toBe('640px');
+    expect(frame.parentElement?.className).toBe('zb-body');
   });
 
   it('closes on Escape', () => {
