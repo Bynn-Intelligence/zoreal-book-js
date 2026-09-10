@@ -1,6 +1,6 @@
 {
   "name": "@zoreal/book-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ZOREAL Book embed for the browser, framework-free: your booking page inside your own site, in an iframe neither page can read.",
   "license": "MIT",
   "repository": {
