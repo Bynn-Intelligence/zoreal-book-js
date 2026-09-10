@@ -1,5 +1,5 @@
 /** Bumped by the release workflow. */
-export const SDK_VERSION = '0.1.1';
+export const SDK_VERSION = '0.1.2';
 
 /**
  * The version of the page/frame message contract.
