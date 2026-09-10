@@ -40,6 +40,19 @@ The requirement is yours to choose per event type. The embed can neither raise
 nor lower it, which is the point: your page cannot talk a guest past your own
 rule.
 
+## What it looks like
+
+Inline, where the tag stands, on a host page with its own header and copy. The
+screens size themselves to their content and bring their own styles:
+
+![The booking screens rendered inline on a host page, under the page's own heading](docs/inline.png)
+
+As a layer over the page, opened by a button the host already had. The layer
+lives in a shadow root, so the host's CSS cannot reach it and its CSS cannot
+leak out:
+
+![The booking screens open as a layer over a host page, with the page dimmed behind](docs/modal.png)
+
 ## Install
 
 ```sh
